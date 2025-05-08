@@ -1,0 +1,64 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from sklearn import datasets
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA 
+
+iris = datasets.load_iris()
+X = iris.data
+Y = iris.target
+
+# Standardize features
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+
+cov_matrix = np.cov(X_scaled.T)
+print("Covariance Matrix:\n", cov_matrix)
+
+eigenvalues, eigenvectors = np.linalg.eig(cov_matrix)
+print("\nEigenvalues:\n", eigenvalues)
+print("\nEigenvectors:\n", eigenvectors)
+
+fig = plt.figure(figsize=(8,6))
+ax = fig.add_subplot(111, projection='3d')
+colors = ['red', 'green', 'blue']
+labels = iris.target_names
+
+for i in range(len(colors)):
+    ax.scatter(X_scaled[Y==i, 0], X_scaled[Y==i, 1], X_scaled[Y==i, 2], color=colors[i], label=labels[i])
+
+ax.set_xlabel('Sepal length')
+ax.set_ylabel('Sepal width')
+ax.set_zlabel('Petal length')
+ax.set_title('3D visualization of Iris Data before PCA')
+plt.legend()
+plt.show()
+
+
+u, s, vt = np.linalg.svd(X_scaled, full_matrices=False)
+print("\nSingular values:\n", s)
+
+
+pca = PCA(n_components=2)
+x_pca = pca.fit_transform(X_scaled)
+
+
+explained_variance = pca.explained_variance_ratio_
+print(f"\nExplained variance by PC1: {explained_variance[0]:.2f}")
+print(f"Explained variance by PC2: {explained_variance[1]:.2f}")
+
+
+plt.figure(figsize=(8,6))
+for i in range(len(colors)):
+    plt.scatter(x_pca[Y==i, 0], x_pca[Y==i, 1], color=colors[i], label=labels[i])
+plt.xlabel('PC1')
+plt.ylabel('PC2')
+plt.title('PCA on Iris Dataset')
+plt.legend()
+plt.grid()
+plt.show()
+
+
